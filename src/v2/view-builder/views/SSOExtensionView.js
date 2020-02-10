@@ -19,7 +19,7 @@ const Body = BaseForm.extend({
     const params = formData.map((elem) => {
       return `${elem.name}=${elem.value}`;
     }).join('&');
-    Util.redirectWithForm(`${this.options.currentViewState.href}?${params}`);
+    Util.redirectWithFormGet(`${this.options.currentViewState.href}?${params}`);
   }
 });
 

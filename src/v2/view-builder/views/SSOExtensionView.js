@@ -13,6 +13,7 @@ const Body = BaseForm.extend({
   initialize () {
     BaseForm.prototype.initialize.apply(this, arguments);
     this.add('<div class="spinner"></div>');
+    document.cookie = `stateHandle=${this.options.appState.get('currentState').stateHandle};path=/`;
     setTimeout(() => Util.redirectWithFormGet(this.options.currentViewState.href), 500);
   }
 });

@@ -335,7 +335,7 @@ function (Q, Okta, OktaAuth, Util, AccountRecoveryForm, PrimaryAuthForm, Beacon,
       });
       itp('calls the transformUsername function with the right parameters', function () {
         return setupWithTransformUsername().then(function (test) {
-          spyOn(test.router.settings, 'transformUsername');
+          spyOn(test.router.settings, 'transformUsername').and.callThrough();
           test.setNextResponse(resChallengeEmail);
           test.form.setUsername('foo');
           test.form.sendEmail();

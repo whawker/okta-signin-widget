@@ -842,7 +842,7 @@ function (Q, OktaAuth, LoginUtil, Okta, Util, AuthContainer, PrimaryAuthForm, Be
     Expect.describe('transform username', function () {
       itp('calls the transformUsername function with the right parameters', function () {
         return setupWithTransformUsername().then(function (test) {
-          spyOn(test.router.settings, 'transformUsername');
+          spyOn(test.router.settings, 'transformUsername').and.callThrough();
           test.form.setUsername('testuser');
           test.form.setPassword('pass');
           test.setNextResponse(resSuccess);
@@ -857,7 +857,7 @@ function (Q, OktaAuth, LoginUtil, Okta, Util, AuthContainer, PrimaryAuthForm, Be
       itp('does not call transformUsername while loading security image', function () {
         return setup({ features: { securityImage: true }, transformUsername: transformUsername })
           .then(function (test) {
-            spyOn(test.router.settings, 'transformUsername');
+            spyOn(test.router.settings, 'transformUsername').and.callThrough();
             test.setNextResponse(resSecurityImage);
             test.form.setUsername('testuser');
             return waitForBeaconChange(test);

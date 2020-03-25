@@ -73,10 +73,13 @@ function (Okta, FormController, Enums, FormType, Util, ValidationUtil, ContactSu
       save: function () {
         var self = this;
         return this.startTransaction(function (authClient) {
-          return authClient.unlockAccount({
-            username: self.settings.transformUsername(self.get('username'), Enums.UNLOCK_ACCOUNT),
-            factorType: self.get('factorType')
-          });
+          return self.settings.transformUsername(self.get('username'), Enums.UNLOCK_ACCOUNT)
+            .then(function (username) {
+              return authClient.unlockAccount({
+                username: username,
+                factorType: self.get('factorType')
+              });
+            });
         })
           .fail(function () {
           //need empty fail handler on model to display errors on form

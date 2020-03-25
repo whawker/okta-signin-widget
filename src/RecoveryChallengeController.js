@@ -113,15 +113,21 @@ function (Okta, FormController, FormType, Enums, FooterSignout, TextBox) {
           // The user could have landed here via the Forgot Password/Unlock Account flow
           switch (recoveryType) {
           case Enums.RECOVERY_TYPE_PASSWORD:
-            return authClient.forgotPassword({
-              username: settings.transformUsername(username, Enums.FORGOT_PASSWORD),
-              factorType: Enums.RECOVERY_FACTOR_TYPE_EMAIL
-            });
+            return settings.transformUsername(username, Enums.FORGOT_PASSWORD)
+              .then(function (username) {
+                return authClient.forgotPassword({
+                  username: username,
+                  factorType: Enums.RECOVERY_FACTOR_TYPE_EMAIL
+                });
+              });
           case Enums.RECOVERY_TYPE_UNLOCK:
-            return authClient.unlockAccount({
-              username: settings.transformUsername(username, Enums.UNLOCK_ACCOUNT),
-              factorType: Enums.RECOVERY_FACTOR_TYPE_EMAIL
-            });
+            return settings.transformUsername(username, Enums.UNLOCK_ACCOUNT)
+              .then(function (username) {
+                return authClient.unlockAccount({
+                  username: username,
+                  factorType: Enums.RECOVERY_FACTOR_TYPE_EMAIL
+                });
+              });
           default:
             return;
           }

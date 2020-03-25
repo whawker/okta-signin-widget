@@ -38,28 +38,29 @@ function (Okta, PrimaryAuthModel, CookieUtil, Enums, Util) {
     local: {},
 
     save: function () {
-      var username = this.settings.transformUsername(this.get('username'), Enums.IDP_DISCOVERY),
-          remember = this.get('remember'),
-          lastUsername = this.get('lastUsername'),
-          resource = 'okta:acct:' + username,
-          requestContext = this.get('requestContext');
-
-      this.setUsernameCookie(username, remember, lastUsername);
-
       //the 'save' event here is triggered and used in the BaseLoginController
       //to disable the primary button
       this.trigger('save');
 
       this.appState.trigger('loading', true);
 
-      var webfingerArgs = {
-        resource: resource,
-        requestContext: requestContext
-      };
-
       var authClient = this.appState.settings.authClient;
 
-      authClient.webfinger(webfingerArgs)
+      this.settings.transformUsername(this.get('username'), Enums.IDP_DISCOVERY)
+        .then(_.bind(function (username) {
+          var remember = this.get('remember'),
+              lastUsername = this.get('lastUsername'),
+              resource = 'okta:acct:' + username,
+              requestContext = this.get('requestContext');
+
+          this.setUsernameCookie(username, remember, lastUsername);
+
+          return {
+            resource: resource,
+            requestContext: requestContext
+          };
+        }, this))
+        .then(authClient.webfinger)
         .then(_.bind(function (res) {
           if(res && res.links && res.links[0]) {
             if(res.links[0].properties['okta:idp:type'] === 'OKTA') {

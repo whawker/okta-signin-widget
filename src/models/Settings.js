@@ -378,10 +378,17 @@ function (Okta, Q, Errors, BrowserFeatures, Util, Logger, config) {
     // Get the username by applying the transform function if it exists.
     transformUsername: function (username, operation) {
       var transformFn = this.get('transformUsername');
-      if (transformFn && _.isFunction(transformFn)) {
-        return transformFn(username, operation);
-      }
-      return username;
+      return Q.Promise(function (resolve) {
+        if (!_.isFunction(transformFn)) {
+          resolve(username);
+        }
+        else if (transformFn.length === 3) {
+          transformFn(username, operation, resolve);
+        }
+        else {
+          resolve(transformFn(username, operation));
+        }
+      });
     },
 
     processCreds: function (creds) {

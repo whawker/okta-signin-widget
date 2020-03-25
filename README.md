@@ -490,8 +490,10 @@ var signIn = new OktaSignIn(config);
 
 - **transformUsername:** Transforms the username before sending requests with the username to Okta. This is useful when you have an internal mapping between what the user enters and their Okta username.
 
+    If transformUsername takes 2 or less arguments it will be executed as a synchronous hook:
+
     ```javascript
-    // The callback function is passed two arguments:
+    // The function is passed two arguments:
     // 1) username: The name entered by the user
     // 2) operation: The type of operation the user is trying to perform:
     //      - PRIMARY_AUTH
@@ -505,6 +507,31 @@ var signIn = new OktaSignIn(config);
         : username + '@acme.com';
     }
     ```
+  
+    If transformUsername takes three arguments it will be executed as an asynchronous hook:
+    
+    ```javascript
+        // The function is passed three arguments:
+        // 1) username: The name entered by the user
+        // 2) operation: The type of operation the user is trying to perform:
+        //      - PRIMARY_AUTH
+        //      - FORGOT_PASSWORD
+        //      - UNLOCK_ACCOUNT
+        // 3) callback: For further processing
+        transformUsername: function (username, operation, callback) {
+          $.ajax({
+            method: "POST",
+            url: "/my-username-service",
+            data: {
+              username: username,
+              operation: operation
+            },
+            success: function (res) {
+              callback(res.myTransformedUsername);
+            }
+          });
+        }
+        ```
 
 - **processCreds:** Hook to handle the credentials before they are sent to Okta in the Primary Auth, Password Expiration, and Password Reset flows.
 

@@ -90,43 +90,40 @@ function (Okta, BaseLoginModel, CookieUtil, Enums) {
     },
 
     save: function () {
-      var username = this.settings.transformUsername(this.get('username'), Enums.PRIMARY_AUTH),
-          remember = this.get('remember'),
-          lastUsername = this.get('lastUsername');
-
-      this.setUsernameCookie(username, remember, lastUsername);
-
       //the 'save' event here is triggered and used in the BaseLoginController
       //to disable the primary button on the primary auth form
       this.trigger('save');
 
       this.appState.trigger('loading', true);
 
-      var signInArgs = this.getSignInArgs(username);
+      return this.settings.transformUsername(this.get('username'), Enums.PRIMARY_AUTH)
+        .then(_.bind(function (username) {
+          var remember = this.get('remember'),
+              lastUsername = this.get('lastUsername'),
+              signInArgs = this.getSignInArgs(username);
 
-      var primaryAuthPromise;
+          this.setUsernameCookie(username, remember, lastUsername);
 
-      if (this.appState.get('isUnauthenticated')) {
-        var authClient = this.appState.settings.authClient;
-        // bootstrapped with stateToken
-        if (this.appState.get('isIdxStateToken')) {
-          // if its an idx stateToken, we send the parameter as identifier to login API
-          primaryAuthPromise = this.doTransaction(function (transaction) {
-            return this.doPrimaryAuth(authClient, signInArgs, transaction.login);
-          });
-        } else {
-          primaryAuthPromise = this.doTransaction(function (transaction) {
-            return this.doPrimaryAuth(authClient, signInArgs, transaction.authenticate);
-          });
-        }
-      } else {
-        //normal username/password flow without stateToken
-        primaryAuthPromise = this.startTransaction(function (authClient) {
-          return this.doPrimaryAuth(authClient, signInArgs, _.bind(authClient.signIn, authClient));
-        });
-      }
-
-      return primaryAuthPromise
+          if (this.appState.get('isUnauthenticated')) {
+            var authClient = this.appState.settings.authClient;
+            // bootstrapped with stateToken
+            if (this.appState.get('isIdxStateToken')) {
+              // if its an idx stateToken, we send the parameter as identifier to login API
+              return this.doTransaction(function (transaction) {
+                return this.doPrimaryAuth(authClient, signInArgs, transaction.login);
+              });
+            } else {
+              return this.doTransaction(function (transaction) {
+                return this.doPrimaryAuth(authClient, signInArgs, transaction.authenticate);
+              });
+            }
+          } else {
+            //normal username/password flow without stateToken
+            return this.startTransaction(function (authClient) {
+              return this.doPrimaryAuth(authClient, signInArgs, _.bind(authClient.signIn, authClient));
+            });
+          }
+        }, this))
         .fail(_.bind(function () {
           // Specific event handled by the Header for the case where the security image is not
           // enabled and we want to show a spinner. (Triggered only here and handled only by Header).

@@ -79,11 +79,14 @@ function (Okta, FormController, Enums, FormType, ValidationUtil, Util, ContactSu
         var self = this;
         var relayState = this.settings.get('relayState');
         this.startTransaction(function (authClient) {
-          return authClient.forgotPassword({
-            username: self.settings.transformUsername(self.get('username'), Enums.FORGOT_PASSWORD),
-            factorType: self.get('factorType'),
-            relayState: relayState
-          });
+          return self.settings.transformUsername(self.get('username'), Enums.FORGOT_PASSWORD)
+            .then(function (username) {
+              return authClient.forgotPassword({
+                username: username,
+                factorType: self.get('factorType'),
+                relayState: relayState
+              });
+            });
         })
           .fail(function () {
           //need empty fail handler on model to display errors on form
